@@ -463,6 +463,65 @@ function initStickyNav() {
 }
 
 // ============================================
+// 10. Project Image Hover Slideshow
+// ============================================
+function initProjectImageHover() {
+    const projectCards = document.querySelectorAll('.project-card');
+
+    projectCards.forEach(card => {
+        const img = card.querySelector('.project-image img');
+        if (!img) return;
+
+        const src = img.getAttribute('src') || img.src;
+        if (!src) return;
+
+        // Detección más flexible: cualquier cosa que termine en _numero.extension (ej. Palma_real_1.webp)
+        const match = src.match(/(.*_)(\d+)(\.\w+)$/i);
+        if (!match) {
+            console.log("Mini-Galería: Formato no compatible en", src);
+            return;
+        }
+
+        const basePath = match[1]; // ruta base hasta el guión bajo
+        const suffix = match[3];   // extensión
+        
+        // Determinar maxImages sin importar mayúsculas
+        let maxImages = 1;
+        if (basePath.toLowerCase().includes('palma_real')) maxImages = 5;
+        if (basePath.toLowerCase().includes('requemar')) maxImages = 4;
+        
+        if (maxImages <= 1) return;
+
+        let currentIndex = 1;
+        let intervalId;
+
+        // Precargar siguientes imágenes
+        for(let i = 2; i <= maxImages; i++) {
+            const preload = new Image();
+            preload.src = `${basePath}${i}${suffix}`;
+        }
+
+        card.addEventListener('mouseenter', () => {
+            // Empezar a ciclar las imágenes de 1 en 1
+            intervalId = setInterval(() => {
+                currentIndex++;
+                if (currentIndex > maxImages) {
+                    currentIndex = 1;
+                }
+                img.src = `${basePath}${currentIndex}${suffix}`;
+            }, 800);
+        });
+
+        card.addEventListener('mouseleave', () => {
+             // Reset al quitar el mouse
+            clearInterval(intervalId);
+            currentIndex = 1;
+            img.src = `${basePath}1${suffix}`;
+        });
+    });
+}
+
+// ============================================
 // Initialize All Features
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -476,6 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initProjectFilters();
     initFloatingButton();
     initSearchBar();
+    initProjectImageHover();
     initStickyNav();
 
     console.log('✅ URBEQ - All features loaded!');
