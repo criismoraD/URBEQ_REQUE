@@ -194,8 +194,13 @@ function initFormValidation() {
 // 5. Scroll Animations (Intersection Observer)
 // ============================================
 function initScrollAnimations() {
+    // Select animated elements from ALL pages
     const animatedElements = document.querySelectorAll(
-        '.project-card, .testimonial-card, .education-card, .feature, .why-us-image, .stats-card'
+        '.project-card, .testimonial-card, .education-card, .feature, ' +
+        '.why-us-image, .why-us-content, .stats-card, .stat-item, ' +
+        '.pf-card, .pricing-card, .gallery-main, .gallery-thumbs, ' +
+        '.calc-form, .calc-summary, .article-body h2, .article-body .article-tip, ' +
+        '.section-header, .education-header, .footer-grid'
     );
 
     const observerOptions = {
@@ -213,12 +218,22 @@ function initScrollAnimations() {
         });
     }, observerOptions);
 
-    animatedElements.forEach(element => {
+    animatedElements.forEach((element, index) => {
         element.style.opacity = '0';
         element.style.transform = 'translateY(30px)';
-        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        element.style.transition = `opacity 0.6s ease ${index % 4 * 0.1}s, transform 0.6s ease ${index % 4 * 0.1}s`;
         observer.observe(element);
     });
+
+    // Hero entrance animation
+    const hero = document.querySelector('.project-detail-hero, .article-hero');
+    if (hero) {
+        hero.style.opacity = '0';
+        hero.style.transition = 'opacity 0.8s ease';
+        requestAnimationFrame(() => {
+            hero.style.opacity = '1';
+        });
+    }
 }
 
 // ============================================
@@ -242,8 +257,7 @@ function initProjectFilters() {
     const filters = [
         { label: 'Todos', value: 'all' },
         { label: 'Pimentel', value: 'pimentel' },
-        { label: 'Reque', value: 'reque' },
-        { label: 'Lambayeque', value: 'lambayeque' }
+        { label: 'Reque', value: 'reque' }
     ];
 
     filters.forEach(filter => {
@@ -349,7 +363,6 @@ function initFloatingButton() {
             transition: opacity 0.3s;
         `;
 
-        floatingBtn.style.position = 'relative';
         floatingBtn.appendChild(tooltip);
 
         floatingBtn.addEventListener('mouseenter', () => {
@@ -522,6 +535,50 @@ function initProjectImageHover() {
 }
 
 // ============================================
+// 10. Auto-playing Project Gallery
+// ============================================
+function initProjectGallery() {
+    const galleryThumbs = document.querySelectorAll('.gallery-thumb');
+    if (galleryThumbs.length === 0) return;
+
+    let currentIndex = 0;
+    let intervalId;
+    
+    // Configurar tiempo de transición (en milisegundos)
+    const slideDuration = 3500;
+
+    function nextSlide() {
+        // Encontrar índice actual
+        const thumbsArray = Array.from(galleryThumbs);
+        currentIndex = thumbsArray.findIndex(t => t.classList.contains('active'));
+        
+        // Siguiente índice (volver a 0 si es el último)
+        currentIndex = (currentIndex + 1) % galleryThumbs.length;
+        
+        // Simular clic en el thumbnail para cambiar imagen usando la función existente
+        galleryThumbs[currentIndex].click();
+    }
+
+    function startAutoPlay() {
+        intervalId = setInterval(nextSlide, slideDuration);
+    }
+
+    function stopAutoPlay() {
+        clearInterval(intervalId);
+    }
+
+    // Iniciar autoplay
+    startAutoPlay();
+
+    // Pausar si el usuario pone el mouse sobre la galería
+    const gallerySection = document.querySelector('.project-gallery');
+    if (gallerySection) {
+        gallerySection.addEventListener('mouseenter', stopAutoPlay);
+        gallerySection.addEventListener('mouseleave', startAutoPlay);
+    }
+}
+
+// ============================================
 // Initialize All Features
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -537,6 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSearchBar();
     initProjectImageHover();
     initStickyNav();
+    initProjectGallery();
 
     console.log('✅ URBEQ - All features loaded!');
 });
